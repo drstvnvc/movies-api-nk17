@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CreateMovieRequest;
 use App\Http\Requests\UpdateMovieRequest;
 use App\Models\Movie;
+use Illuminate\Http\Response;
 use Illuminate\Http\Request;
 
 class MovieController extends Controller
@@ -14,9 +15,18 @@ class MovieController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $movies = Movie::all();
+        $title = $request->query('title');
+        $per_page = $request->query('per_page', 10);
+
+        $query = Movie::query();
+
+        if ($title) {
+            $query->where('title', 'like', "%$title%");
+        }
+        $movies = $query->paginate($per_page);
+
         return response()->json($movies);
     }
 
@@ -68,6 +78,7 @@ class MovieController extends Controller
     public function destroy(Movie $movie)
     {
         $movie->delete();
-        return response(null, 204);
+        // return response()->json($movie);
+        return response(null, Response::HTTP_NO_CONTENT);
     }
 }
